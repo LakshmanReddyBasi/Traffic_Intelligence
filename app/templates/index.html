@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Traffic Volume Prediction</title>
+   <style>
+       /* Magical variables */
+       :root {
+           --primary: #667eea;
+           --secondary: #764ba2;
+           --accent: #f093fb;
+           --dark: #1a1a2e;
+           --light: rgba(255, 255, 255, 0.95);
+           --glow: rgba(102, 126, 234, 0.6);
+       }
+
+       /* Cosmic background */
+       body {
+           margin: 0;
+           padding: 20px;
+           min-height: 100vh;
+           font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+           background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+           position: relative;
+           overflow-x: hidden;
+       }
+
+       /* Animated particles */
+       body::before {
+           content: '';
+           position: fixed;
+           top: 0;
+           left: 0;
+           width: 100%;
+           height: 100%;
+           background: 
+               radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+               radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+           animation: sparkle 15s infinite;
+           pointer-events: none;
+           z-index: 1;
+       }
+
+       @keyframes sparkle {
+           0%, 100% { opacity: 0.3; transform: rotate(0deg); }
+           50% { opacity: 1; transform: rotate(180deg); }
+       }
+
+       /* Navigation */
+       .nav-bar {
+           position: fixed;
+           top: 0;
+           left: 0;
+           width: 100%;
+           padding: 15px 30px;
+           background: rgba(0, 0, 0, 0.2);
+           backdrop-filter: blur(20px);
+           border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+           z-index: 1000;
+       }
+
+       .nav-content {
+           display: flex;
+           justify-content: space-between;
+           align-items: center;
+           max-width: 1200px;
+           margin: 0 auto;
+       }
+
+       .logo {
+           color: white;
+           font-size: 1.5em;
+           font-weight: 700;
+           text-decoration: none;
+           text-shadow: 0 0 10px var(--glow);
+       }
+
+       .nav-link {
+           color: white;
+           text-decoration: none;
+           padding: 8px 16px;
+           border-radius: 20px;
+           background: rgba(255, 255, 255, 0.1);
+           transition: all 0.3s ease;
+       }
+
+       .nav-link:hover {
+           background: rgba(255, 255, 255, 0.2);
+           transform: translateY(-2px);
+       }
+
+       /* Main container */
+       .container {
+           position: relative;
+           z-index: 10;
+           max-width: 1200px;
+           margin: 100px auto 50px;
+           padding: 40px;
+           background: rgba(255, 255, 255, 0.1);
+           backdrop-filter: blur(20px);
+           border-radius: 25px;
+           border: 1px solid rgba(255, 255, 255, 0.2);
+           box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+           animation: slideUp 0.8s ease-out;
+       }
+
+       @keyframes slideUp {
+           from { opacity: 0; transform: translateY(50px); }
+           to { opacity: 1; transform: translateY(0); }
+       }
+
+       /* Header section */
+       .header {
+           text-align: center;
+           margin-bottom: 40px;
+       }
+
+       .header h1 {
+           color: white;
+           font-size: 2.8em;
+           font-weight: 700;
+           margin-bottom: 15px;
+           text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+           animation: glow 2s ease-in-out infinite alternate;
+       }
+
+       @keyframes glow {
+           from { text-shadow: 0 0 20px rgba(255, 255, 255, 0.5); }
+           to { text-shadow: 0 0 30px rgba(255, 255, 255, 0.8), 0 0 40px var(--glow); }
+       }
+
+       .header p {
+           color: rgba(255, 255, 255, 0.9);
+           font-size: 1.2em;
+           margin-bottom: 0;
+       }
+
+       /* Traffic visualization */
+       .traffic-visual {
+           display: flex;
+           justify-content: center;
+           align-items: center;
+           margin: 30px 0;
+           position: relative;
+       }
+
+       .road {
+           width: 300px;
+           height: 60px;
+           background: linear-gradient(90deg, #333 0%, #555 50%, #333 100%);
+           border-radius: 30px;
+           position: relative;
+           overflow: hidden;
+       }
+
+       .road::before {
+           content: '';
+           position: absolute;
+           top: 50%;
+           left: 0;
+           width: 100%;
+           height: 4px;
+           background: repeating-linear-gradient(90deg, white 0px, white 20px, transparent 20px, transparent 40px);
+           transform: translateY(-50%);
+           animation: roadLine 3s infinite linear;
+       }
+
+       @keyframes roadLine {
+           0% { transform: translateY(-50%) translateX(0); }
+           100% { transform: translateY(-50%) translateX(40px); }
+       }
+
+       .traffic-car {
+           position: absolute;
+           width: 40px;
+           height: 20px;
+           background: linear-gradient(45deg, #ff6b6b, #ffa500);
+           border-radius: 10px;
+           top: 50%;
+           transform: translateY(-50%);
+           animation: carMove 4s infinite ease-in-out;
+       }
+
+       @keyframes carMove {
+           0%, 100% { left: 20px; }
+           50% { left: 240px; }
+       }
+
+       /* Form styling */
+       .form-container {
+           background: rgba(255, 255, 255, 0.05);
+           border-radius: 20px;
+           padding: 30px;
+           border: 1px solid rgba(255, 255, 255, 0.1);
+       }
+
+       .form-title {
+           color: white;
+           font-size: 1.8em;
+           font-weight: 600;
+           margin-bottom: 30px;
+           text-align: center;
+           text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+       }
+
+       /* Horizontal grid layout */
+       .form-grid {
+           display: grid;
+           grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+           gap: 25px;
+           margin-bottom: 30px;
+       }
+
+       .form-section {
+           background: rgba(255, 255, 255, 0.08);
+           border-radius: 15px;
+           padding: 25px;
+           border: 1px solid rgba(255, 255, 255, 0.1);
+           transition: all 0.3s ease;
+       }
+
+       .form-section:hover {
+           transform: translateY(-3px);
+           background: rgba(255, 255, 255, 0.12);
+           box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+       }
+
+       .section-title {
+           color: var(--accent);
+           font-size: 1.2em;
+           font-weight: 600;
+           margin-bottom: 20px;
+           display: flex;
+           align-items: center;
+           gap: 10px;
+       }
+
+       .section-icon {
+           font-size: 1.4em;
+       }
+
+       /* Form groups */
+       .form-group {
+           margin-bottom: 20px;
+       }
+
+       .form-group:last-child {
+           margin-bottom: 0;
+       }
+
+       /* Label styling */
+       label {
+           display: block;
+           color: white;
+           font-weight: 500;
+           margin-bottom: 8px;
+           font-size: 0.95em;
+           text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+       }
+
+       /* Input styling */
+       input[type="number"], select {
+           width: 100%;
+           padding: 12px 16px;
+           background: rgba(255, 255, 255, 0.15);
+           border: 2px solid rgba(255, 255, 255, 0.2);
+           border-radius: 10px;
+           color: white;
+           font-size: 15px;
+           backdrop-filter: blur(10px);
+           transition: all 0.3s ease;
+           box-sizing: border-box;
+       }
+
+       input[type="number"]:focus, select:focus {
+           outline: none;
+           border-color: var(--accent);
+           background: rgba(255, 255, 255, 0.25);
+           box-shadow: 0 0 15px rgba(240, 147, 251, 0.3);
+           transform: translateY(-1px);
+       }
+
+       input::placeholder {
+           color: rgba(255, 255, 255, 0.6);
+       }
+
+       select option {
+           background: var(--dark);
+           color: white;
+       }
+
+       /* Submit button */
+       .submit-container {
+           text-align: center;
+           margin-top: 40px;
+       }
+
+       .submit-btn {
+           padding: 18px 50px;
+           font-size: 18px;
+           font-weight: 700;
+           background: linear-gradient(135deg, var(--accent) 0%, var(--primary) 100%);
+           color: white;
+           border: none;
+           border-radius: 25px;
+           cursor: pointer;
+           transition: all 0.4s ease;
+           text-transform: uppercase;
+           letter-spacing: 1px;
+           box-shadow: 0 10px 25px rgba(240, 147, 251, 0.3);
+           position: relative;
+           overflow: hidden;
+           min-width: 200px;
+       }
+
+       .submit-btn::before {
+           content: '';
+           position: absolute;
+           top: 0;
+           left: -100%;
+           width: 100%;
+           height: 100%;
+           background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+           transition: left 0.5s;
+       }
+
+       .submit-btn:hover::before {
+           left: 100%;
+       }
+
+       .submit-btn:hover {
+           transform: translateY(-5px) scale(1.05);
+           box-shadow: 0 20px 40px rgba(240, 147, 251, 0.5);
+           background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+       }
+
+       .submit-btn:active {
+           transform: translateY(-2px) scale(1.02);
+       }
+
+       /* Result styling */
+       .prediction-result {
+           margin-top: 30px;
+           padding: 25px;
+           background: rgba(255, 255, 255, 0.1);
+           border-radius: 15px;
+           color: white;
+           font-size: 1.3em;
+           font-weight: 600;
+           text-align: center;
+           text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+           border: 1px solid rgba(255, 255, 255, 0.2);
+           animation: resultPulse 0.5s ease-out;
+       }
+
+       @keyframes resultPulse {
+           0% { transform: scale(0.95); opacity: 0; }
+           100% { transform: scale(1); opacity: 1; }
+       }
+
+       /* Responsive design */
+       @media (max-width: 768px) {
+           .container {
+               margin: 80px 10px 20px;
+               padding: 25px;
+           }
+           
+           .header h1 {
+               font-size: 2.2em;
+           }
+           
+           .form-grid {
+               grid-template-columns: 1fr;
+               gap: 20px;
+           }
+           
+           .traffic-visual {
+               transform: scale(0.8);
+           }
+           
+           .nav-content {
+               padding: 0 15px;
+           }
+           
+           .logo {
+               font-size: 1.3em;
+           }
+       }
+
+       /* Loading animation */
+       .loading {
+           display: inline-block;
+           width: 20px;
+           height: 20px;
+           border: 3px solid rgba(255, 255, 255, 0.3);
+           border-radius: 50%;
+           border-top-color: white;
+           animation: spin 1s ease-in-out infinite;
+       }
+
+       @keyframes spin {
+           to { transform: rotate(360deg); }
+       }
+   </style>
+</head>
+
+<body>
+   <!-- Navigation -->
+   <div class="nav-bar">
+       <div class="nav-content">
+           <a href="/" class="logo">🚦 TrafficIntelligence</a>
+           <a href="/" class="nav-link">← Back to Home</a>
+       </div>
+   </div>
+
+   <div class="container">
+       <!-- Header -->
+       <div class="header">
+           <h1>🚗 Traffic Volume Prediction</h1>
+           <p>Enter the details below to get an AI-powered traffic volume estimate</p>
+           
+           <!-- Traffic Visual -->
+           <div class="traffic-visual">
+               <div class="road">
+                   <div class="traffic-car"></div>
+               </div>
+           </div>
+       </div>
+
+       <!-- Main Form -->
+       <div class="form-container">
+           <h2 class="form-title">📊 Prediction Parameters</h2>
+           
+           <form action="{{ url_for('predict') }}" method="post" id="predictionForm">
+               <div class="form-grid">
+                   
+                   <!-- Holiday & Weather Section -->
+                   <div class="form-section">
+                       <div class="section-title">
+                           <span class="section-icon">🎉</span>
+                           Holiday & Weather
+                       </div>
+                       
+                       <div class="form-group">
+                           <label for="holiday">Holiday:</label>
+                           <select id="holiday" name="holiday">
+                               <option value="7">None</option>
+                               <option value="1">Columbus Day</option>
+                               <option value="10">Veterans Day</option>
+                               <option value="9">Thanksgiving Day</option>
+                               <option value="8">Christmas Day</option>
+                               <option value="6">New Year's Day</option>
+                               <option value="11">Washington's Birthday</option>
+                               <option value="5">Memorial Day</option>
+                               <option value="2">Independence Day</option>
+                               <option value="4">State Fair</option>
+                               <option value="3">Labor Day</option>
+                               <option value="4">Martin Luther King Jr Day</option>
+                           </select>
+                       </div>
+
+                       <div class="form-group">
+                           <label for="weather">Weather Condition:</label>
+                           <select id="weather" name="weather" required>
+                               <option value="8">Clear ☀️</option>
+                               <option value="1">Clouds ☁️</option>
+                               <option value="6">Rain 🌧️</option>
+                               <option value="2">Drizzle 🌦️</option>
+                               <option value="5">Mist 🌫️</option>
+                               <option value="4">Haze 🌫️</option>
+                               <option value="3">Fog 🌫️</option>
+                               <option value="10">Thunderstorm ⛈️</option>
+                               <option value="9">Squall 💨</option>
+                               <option value="7">Smoke 💨</option>
+                           </select>
+                       </div>
+                   </div>
+
+                   <!-- Temperature & Conditions -->
+                   <div class="form-section">
+                       <div class="section-title">
+                           <span class="section-icon">🌡️</span>
+                           Temperature & Conditions
+                       </div>
+                       
+                       <div class="form-group">
+                           <label for="temp">Temperature (°C):</label>
+                           <input type="number" name="temp" placeholder="e.g., 25" required />
+                       </div>
+
+                       <div class="form-group">
+                           <label for="rain">Rain Status:</label>
+                           <select name="rain" required>
+                               <option value="0">No Rain 🌤️</option>
+                               <option value="1">Raining 🌧️</option>
+                           </select>
+                       </div>
+
+                       <div class="form-group">
+                           <label for="snow">Snow Status:</label>
+                           <select name="snow" required>
+                               <option value="0">No Snow ❄️</option>
+                               <option value="1">Snowing 🌨️</option>
+                           </select>
+                       </div>
+                   </div>
+
+                   <!-- Date & Time -->
+                   <div class="form-section">
+                       <div class="section-title">
+                           <span class="section-icon">📅</span>
+                           Date & Time
+                       </div>
+                       
+                       <div class="form-group">
+                           <label for="year">Year:</label>
+                           <input type="number" min="2012" max="2025" name="year" placeholder="2024" required />
+                       </div>
+
+                       <div class="form-group">
+                           <label for="month">Month:</label>
+                           <input type="number" min="1" max="12" name="month" placeholder="1-12" required />
+                       </div>
+
+                       <div class="form-group">
+                           <label for="day">Day:</label>
+                           <input type="number" min="1" max="31" name="day" placeholder="1-31" required />
+                       </div>
+                   </div>
+
+                   <!-- Time Details -->
+                   <div class="form-section">
+                       <div class="section-title">
+                           <span class="section-icon">⏰</span>
+                           Time Details
+                       </div>
+                       
+                       <div class="form-group">
+                           <label for="hours">Hour (24-hour format):</label>
+                           <input type="number" min="0" max="23" name="hours" placeholder="0-23" required />
+                       </div>
+
+                       <div class="form-group">
+                           <label for="minutes">Minutes:</label>
+                           <input type="number" min="0" max="59" name="minutes" placeholder="0-59" required />
+                       </div>
+
+                       <div class="form-group">
+                           <label for="seconds">Seconds:</label>
+                           <input type="number" min="0" max="59" name="seconds" placeholder="0-59" required />
+                       </div>
+                   </div>
+               </div>
+
+               <!-- Submit Button -->
+               <div class="submit-container">
+                   <button type="submit" class="submit-btn" id="submitBtn">
+                       🔮 Predict Traffic Volume
+                   </button>
+               </div>
+           </form>
+
+           <!-- Display Prediction Result -->
+           {% if prediction_text %}
+           <div class="prediction-result">
+               {{ prediction_text }}
+           </div>
+           {% endif %}
+       </div>
+   </div>
+
+   <script>
+       // Form submission with loading state
+       document.getElementById('predictionForm').addEventListener('submit', function() {
+           const submitBtn = document.getElementById('submitBtn');
+           submitBtn.innerHTML = '<span class="loading"></span> Analyzing...';
+           submitBtn.disabled = true;
+       });
+
+       // Auto-fill current date and time
+       function setCurrentDateTime() {
+           const now = new Date();
+           document.querySelector('input[name="year"]').value = now.getFullYear();
+           document.querySelector('input[name="month"]').value = now.getMonth() + 1;
+           document.querySelector('input[name="day"]').value = now.getDate();
+           document.querySelector('input[name="hours"]').value = now.getHours();
+           document.querySelector('input[name="minutes"]').value = now.getMinutes();
+           document.querySelector('input[name="seconds"]').value = now.getSeconds();
+       }
+
+       // Add quick-fill button functionality
+       document.addEventListener('DOMContentLoaded', function() {
+           // Add quick fill button
+           const quickFillBtn = document.createElement('button');
+           quickFillBtn.type = 'button';
+           quickFillBtn.innerHTML = '⚡ Quick Fill Current Time';
+           quickFillBtn.style.cssText = `
+               padding: 10px 20px;
+               background: rgba(255,255,255,0.2);
+               color: white;
+               border: 1px solid rgba(255,255,255,0.3);
+               border-radius: 10px;
+               cursor: pointer;
+               margin: 10px 0;
+               transition: all 0.3s ease;
+           `;
+           quickFillBtn.onmouseover = () => quickFillBtn.style.background = 'rgba(255,255,255,0.3)';
+           quickFillBtn.onmouseout = () => quickFillBtn.style.background = 'rgba(255,255,255,0.2)';
+           quickFillBtn.onclick = setCurrentDateTime;
+           
+           // Insert before the last form section
+           const lastSection = document.querySelector('.form-section:last-child');
+           lastSection.appendChild(quickFillBtn);
+       });
+
+       // Add input validation and enhancement
+       document.querySelectorAll('input[type="number"]').forEach(input => {
+           input.addEventListener('focus', function() {
+               this.style.transform = 'translateY(-2px)';
+           });
+           
+           input.addEventListener('blur', function() {
+               this.style.transform = 'translateY(0)';
+           });
+       });
+   </script>
+</body>
+</html>
