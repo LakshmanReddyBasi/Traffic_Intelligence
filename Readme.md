@@ -24,9 +24,8 @@ TrafficIntelligence/
 ├── app/
 │   ├── app.py            # Main Flask application
 │   ├── templates/
-│   │   ├── home.html     # Landing page
-│   │   └── index.html    # Prediction form
-│   └── static/           # CSS, JS, images
+│       ├── home.html     # Landing page
+│       └── index.html    # Prediction form
 ├── pkl/
 │   ├── best_model.pkl    # Trained ML model
 │   ├── scaler.pkl        # Feature scaler
